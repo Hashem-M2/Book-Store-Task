@@ -1,0 +1,82 @@
+﻿@page "/get-books"
+@using BookStore.UI.Models
+@using BookStore.UI.Services
+@inject IBookService BookService
+
+<h3 class="text-center">Books List</h3>
+<a class=" btn btn-primary mb-3" href="/add-book">New Book</a>
+
+@if (books == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Published Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in books)
+            {
+                <tr>
+                    <td>@book.Title</td>
+                    <td>@book.TypeBook</td>
+                    <td>@book.Price</td>
+                    <td>@book.PublishedDate</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="()=> DeleteBook(book.BookId)">Delete</button>
+                        <a class="btn btn-info" href="/update-book/@book.BookId">Update</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private IEnumerable<BookListDto> books;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBooksAsync();
+    }
+
+    private async Task LoadBooksAsync()
+    {
+        try
+        {
+            books = await BookService.GetAllBooksAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading books: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteBook(int bookId)
+    {
+        try
+        {
+            var isDeleted = await BookService.DeleteBookAsync(bookId);
+
+            if (isDeleted)
+            {
+                await LoadBooksAsync();
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting book: {ex.Message}");
+        }
+    }
+}
+
